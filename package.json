@@ -1,7 +1,11 @@
 {
   "name": "ligature",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Service injection framework for typescript",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:pwwolf/ligature.git"
+  },
   "scripts": {
     "prepublish": "npm run tsc",
     "tsc": "tsc",
@@ -9,7 +13,7 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "Patrick Wolf <patrick@monkeybreadtech.com>",
+  "author": "Patrick Wolf <patwolf@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/async": "^2.0.40",
