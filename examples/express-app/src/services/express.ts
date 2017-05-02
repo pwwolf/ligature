@@ -33,7 +33,6 @@ export default class Express extends Service {
 
   done () {
     const errorHandler: express.ErrorRequestHandler = (err, req, res, next) => {
-      console.log("YO")
       res.status(500).json({
         message: err.message
       });
