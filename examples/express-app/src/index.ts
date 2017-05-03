@@ -1,8 +1,8 @@
-import { ServiceLoader, Consumer } from 'ligature';
+import { ServiceLoader, Consumer, Service, ServiceConstructor } from 'ligature';
 import Express from './services/express';
 import TestRoute from './routes/test';
 
-let routes = [
+let routes : Array<ServiceConstructor> = [
   TestRoute
 ]
 

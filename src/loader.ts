@@ -69,6 +69,7 @@ export class ServiceLoader {
             let deps = this.dependencies.get(type);
             if (deps) {
               deps.forEach(dep => {
+                debug(`Injecting ${dep.type} into field ${dep.propertyKey} of ${type}: ${this.instanceMap.get(dep.type)}`);
                 Object.defineProperty(obj, dep.propertyKey, {
                   value: this.instanceMap.get(dep.type),
                   writable: false,
@@ -132,7 +133,14 @@ export class ServiceLoader {
     });
   }
 
-  private invokeInit () { }
+  get<T extends Service>(c: { new (): T; }): T {
+
+    let toReturn = this.instanceMap.get(c.name);
+    if (toReturn instanceof c) {
+      return toReturn;
+    }
+    throw new Error(`${c} must be a service.`);
+  }
 
   addInstance (typeName: string, instance: Service) {
     this.instanceMap.set(typeName, instance);
@@ -155,7 +163,6 @@ export class ServiceLoader {
 
 const loader = ServiceLoader.getInstance();
 export function inject (target: any, propertyKey: string): any {
-
   let curTypeName = target.constructor.name;
 
   if (!(target instanceof Service) && !(target instanceof Consumer)) {
