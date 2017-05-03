@@ -1,6 +1,6 @@
 {
   "name": "ligature",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Service injection framework for typescript",
   "repository": {
     "type": "git",
