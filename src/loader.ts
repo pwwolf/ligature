@@ -63,6 +63,11 @@ export class ServiceLoader {
         types.forEach(type => {
           initOrder.push(type);
           let obj = this.instanceMap.get(type);
+          
+          if (!obj) {
+            nextGroup(Error(`No service found for ${type}.`));
+          }
+
           if (obj instanceof Service || obj instanceof Consumer) {
 
             //First we do the injection, then we can init it
