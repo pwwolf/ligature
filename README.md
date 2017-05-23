@@ -70,6 +70,13 @@ ServiceLoader.getInstance().init([FooService, BarService]).then(() => {
 Ligature determines the correct order in which the services must be started,
 and invokes the `init` method on each on in the correct order.
 
+
+Finally services can be accessed from the ServiceLoader with the `get` method.
+
+```typescript
+let foo = ServiceLoader.getInstance().get(FooService);
+``` 
+
 ### Consumers
 Ligature also provides a `Consumer` class, which is similar to a Service except Consumers cannot be injected into other Services or Consumers.
 
