@@ -1,4 +1,4 @@
-import { inject, Service } from 'ligature';
+import { inject, Service, } from 'ligature';
 import * as express from 'express';
 import * as http from 'http';
 
@@ -10,7 +10,7 @@ export default class Express extends Service {
     return this._app;
   }
 
-  init () {
+  init (options: any) {
     this._app = express();
 
     const port = process.env.PORT ? Number(process.env.PORT) : 3000;

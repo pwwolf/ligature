@@ -9,15 +9,17 @@ import { Consumer } from './consumer';
 const debug = d('loader');
 
 export type ServiceConstructor = {
-  new (): Service | Consumer;
+  new(): Service | Consumer;
 }
+
+export type ServiceConstructorOptions = Map<Service | Consumer, any>;
 
 export class ServiceLoader {
 
   private static instance: ServiceLoader;
 
   private instanceMap: Map<string, Service | Consumer> = new Map();
-  //maps a package classtsc name to the list of packages it directly depends on
+  //maps a package class name to the list of packages it directly depends on
   private dependencies: Map<string, Array<{ propertyKey: string, type: string }>> = new Map();
   private dependencyCalculator: DependencyCalculator = new DependencyCalculator();
 
@@ -30,7 +32,17 @@ export class ServiceLoader {
     return ServiceLoader.instance;
   }
 
-  init (services: Array<ServiceConstructor>): Promise<any> {
+  init (services: Array<ServiceConstructor>, options?: ServiceConstructorOptions): Promise<any> {
+
+    //convert the options to be keyed of a string instead of the service object
+    //TODO: I'd like to avoid this entirely and not ever represent types as a string
+    //but haven't figured that out fully.
+    let initOptions: { [type: string]: any; } = {};
+    if (options) {
+      for (let [key, value] of options) {
+        initOptions[(<any>key).prototype.constructor.name] = value;
+      }
+    }
     //By the time this is called, all the @inject declarations have been processed
 
     //make sure we have an entry for every service
@@ -63,7 +75,7 @@ export class ServiceLoader {
         types.forEach(type => {
           initOrder.push(type);
           let obj = this.instanceMap.get(type);
-          
+
           if (!obj) {
             nextGroup(Error(`No service found for ${type}.`));
           }
@@ -85,8 +97,9 @@ export class ServiceLoader {
             } else {
               return nextGroup(Error(`Missing type ${type}`));
             }
+
             try {
-              let res = obj.init(); //res is either a promise or undefined
+              let res = obj.init(initOptions[obj.constructor.name]); //res is either a promise or undefined
               if (res) {
                 initProms.push(res);
               }
@@ -138,7 +151,7 @@ export class ServiceLoader {
     });
   }
 
-  get<T extends Service>(c: { new (): T; }): T {
+  get<T extends Service>(c: { new(): T; }): T {
 
     let toReturn = this.instanceMap.get(c.name);
     if (toReturn instanceof c) {

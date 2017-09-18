@@ -96,6 +96,18 @@ export default class FooConsumer extends Consumer {
 }
 ```
 
+## Passing options to Service `init` method
+Any options map keyed off of the Service can be passed into the ServiceLoader's init method.
+
+```typescript
+let initOptions = new Map();
+initOptions.set(Express, { foo: 'bar' });
+
+let loader = await ServiceLoader.getInstance().init([Express, ...routes], initOptions);
+```
+
+When the corresponding Service is initialized, its `init` method will be passed the specified options.
+
 ## Advanced Usage
 In addition to the `init` method, Ligature allows an optional `done` method on each service and consumer.
 The `done` method is executed in reverse order from init. For example, if services A, B, and C are initialized in the order A => B => C,

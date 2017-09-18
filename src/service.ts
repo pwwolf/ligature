@@ -1,6 +1,6 @@
 export abstract class Service {
   
-  init (): Promise<any> | void {
+  init (options?: any): Promise<any> | void {
 
   }
 
