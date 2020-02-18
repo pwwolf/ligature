@@ -16,15 +16,15 @@
   "author": "Patrick Wolf <patwolf@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@types/debug": "^0.0.29",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.14",
-    "mocha": "^6.0.2",
+    "@types/debug": "^4.1.5",
+    "@types/mocha": "^7.0.1",
+    "@types/node": "^8.10.59",
+    "mocha": "^7.0.1",
     "ts-node": "^3.0.2",
-    "typescript": "^2.3.1"
+    "typescript": "^3.7.5"
   },
   "dependencies": {
-    "debug": "^2.6.6",
+    "debug": "^4.1.1",
     "reflect-metadata": "^0.1.13"
   }
 }
