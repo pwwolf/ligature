@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { eachSeries } from "async";
 import * as d from "debug";
 import DependencyCalculator from "./lib/depCalc";
 import { Service } from "./service";
@@ -33,10 +32,10 @@ export class ServiceLoader {
     return ServiceLoader.instance;
   }
 
-  init(
+  async init(
     services: Array<ServiceConstructor>,
     options?: ServiceConstructorOptions
-  ): Promise<any> {
+  ) {
     //convert the options to be keyed of a string instead of the service object
     //TODO: I'd like to avoid this entirely and not ever represent types as a string
     //but haven't figured that out fully.
@@ -76,106 +75,66 @@ export class ServiceLoader {
 
     let initOrder: Array<string> = [];
 
-    return new Promise((resolve, reject) => {
-      //Process each group in sequence
-      //However, each service within the group can be processed simultaneously
-      eachSeries(
-        groups,
-        (types, nextGroup) => {
-          let initProms: Array<Promise<any>> = [];
-          types.forEach(type => {
-            initOrder.push(type);
-            let obj = this.instanceMap.get(type);
+    //Process each group in sequence
+    //However, each service within the group can be processed simultaneously
 
-            if (!obj) {
-              nextGroup(Error(`No service found for ${type}.`));
-            }
+    for (let types of groups) {
+      let initProms: Array<Promise<any>> = [];
+      types.forEach(type => {
+        initOrder.push(type);
+        let obj = this.instanceMap.get(type);
 
-            if (obj instanceof Service || obj instanceof Consumer) {
-              //First we do the injection, then we can init it
-              let deps = this.dependencies.get(type);
-              if (deps) {
-                deps.forEach(dep => {
-                  debug(
-                    `Injecting ${dep.type} into field ${
-                      dep.propertyKey
-                    } of ${type}: ${this.instanceMap.get(dep.type)}`
-                  );
-                  Object.defineProperty(obj, dep.propertyKey, {
-                    value: this.instanceMap.get(dep.type),
-                    writable: false,
-                    enumerable: false,
-                    configurable: false
-                  });
-                });
-              } else {
-                return nextGroup(Error(`Missing type ${type}`));
-              }
+        if (!obj) {
+          throw new Error(`No service found for ${type}.`);
+        }
 
-              try {
-                let res = obj.init(initOptions[obj.constructor.name]); //res is either a promise or undefined
-                if (res) {
-                  initProms.push(res);
-                }
-              } catch (err) {
-                initProms.push(Promise.reject(err));
-              }
-            } else {
-              return nextGroup(new Error(`Cannot call init on ${type}`));
-            }
-          });
-          Promise.all(initProms).then(
-            () => {
-              nextGroup();
-            },
-            e => {
-              nextGroup(e);
-            }
-          );
-        },
-        err => {
-          if (err) {
-            return reject(err);
+        if (obj instanceof Service || obj instanceof Consumer) {
+          //First we do the injection, then we can init it
+          let deps = this.dependencies.get(type);
+          if (deps) {
+            deps.forEach(dep => {
+              debug(
+                `Injecting ${dep.type} into field ${
+                  dep.propertyKey
+                } of ${type}: ${this.instanceMap.get(dep.type)}`
+              );
+              Object.defineProperty(obj, dep.propertyKey, {
+                value: this.instanceMap.get(dep.type),
+                writable: false,
+                enumerable: false,
+                configurable: false
+              });
+            });
+          } else {
+            throw new Error(`Missing type ${type}`);
           }
 
-          //Now we need to call the done() method in reverse order of the init
-          //TODO: We could choose to honor the groups as well, but this is easier
-          eachSeries(
-            initOrder.reverse(),
-            (type, next) => {
-              let obj = this.instanceMap.get(type);
-              if (obj instanceof Service || obj instanceof Consumer) {
-                try {
-                  let res = obj.done(); //res is either a promise or undefined
-                  if (res) {
-                    res.then(
-                      () => {
-                        next();
-                      },
-                      err => {
-                        next(err);
-                      }
-                    );
-                  } else {
-                    next();
-                  }
-                } catch (err) {
-                  next(err);
-                }
-              } else {
-                next();
-              }
-            },
-            err => {
-              if (err) {
-                return reject(err);
-              }
-              resolve();
+          try {
+            let res = obj.init(initOptions[obj.constructor.name]); //res is either a promise or undefined
+            if (res) {
+              initProms.push(res);
             }
-          );
+          } catch (err) {
+            initProms.push(Promise.reject(err));
+          }
+        } else {
+          throw new Error(`Cannot call init on ${type}`);
         }
-      );
-    });
+      });
+      await Promise.all(initProms);
+    }
+
+    //Now we need to call the done() method in reverse order of the init
+    //TODO: We could choose to honor the groups as well, but this is easier
+    for (let type of initOrder.reverse()) {
+      let obj = this.instanceMap.get(type);
+      if (obj instanceof Service || obj instanceof Consumer) {
+        let res = obj.done(); //res is either a promise or undefined
+        if (res) {
+          await res;
+        }
+      }
+    }
   }
 
   get<T extends Service>(c: { new (): T }): T {
