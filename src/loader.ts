@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { keys } from "lodash";
 import { eachSeries } from "async";
 import * as d from "debug";
 import DependencyCalculator from "./lib/depCalc";
