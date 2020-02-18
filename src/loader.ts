@@ -217,6 +217,15 @@ export function inject(target: any, propertyKey: string): any {
     throw new Error(`${curTypeName} must extend Service`);
   }
   let type = Reflect.getMetadata("design:type", target, propertyKey);
+  //TODO:
+  //This seems to happen on direct circular dependencies, e.g.
+  // ServiceA injects ServiceB and ServiceB injects ServiceA
+  // but I don't have a good way yet to detect this scenario
+  if (!type) {
+    throw new Error(
+      `Cannot inject ${propertyKey} of ${curTypeName}. This is possibly circular reference.`
+    );
+  }
   let typeName = type.name;
   if (!loader.hasInstance(typeName)) {
     let obj: typeof Service = new type();
