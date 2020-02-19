@@ -32,6 +32,24 @@ export class ServiceLoader {
     return ServiceLoader.instance;
   }
 
+  /**
+   * Reset all the data stored in the loader.
+   * This is used by units tests, and typically shouldn't
+   * be needed in any otherwise.
+   */
+  static reset() {
+    let instance = this.getInstance();
+    instance.dependencyCalculator = new DependencyCalculator();
+    instance.instanceMap = new Map();
+    instance.dependencies = new Map();
+  }
+
+  /**
+   * Starts the initialization process for all services.
+   *
+   * @param services list of services to initialize
+   * @param options
+   */
   async init(
     services: Array<ServiceConstructor>,
     options?: ServiceConstructorOptions
@@ -77,7 +95,6 @@ export class ServiceLoader {
 
     //Process each group in sequence
     //However, each service within the group can be processed simultaneously
-
     for (let types of groups) {
       let initProms: Array<Promise<any>> = [];
       types.forEach(type => {

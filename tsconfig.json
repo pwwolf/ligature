@@ -11,20 +11,9 @@
     "noImplicitAny": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": [
-      "reflect-metadata", "mocha", "node"
-    ],
-    "lib": [
-      "es6",
-      "dom"
-    ]
+    "types": ["reflect-metadata", "node", "jest"],
+    "lib": ["es6", "dom"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test"]
 }
