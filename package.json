@@ -7,7 +7,7 @@
     "url": "git@github.com:pwwolf/ligature.git"
   },
   "scripts": {
-    "prepublish": "npm run tsc",
+    "prepublish": "npm run tsc; npm test",
     "tsc": "tsc",
     "test": "jest"
   },
